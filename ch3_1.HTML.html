@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>健康指標偵探：互動練習</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0F766E;--teal-l:#F0FDFA;--teal-m:#99F6E4;--orange:#C2410C;--orange-l:#FFF7ED;--ink:#1F2937;--grey:#4B5563;--line:#D1D5DB}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans TC',system-ui,sans-serif;color:var(--ink);background:#F8FAFC}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 48px}
+header{background:var(--teal);color:#fff;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+header h1{margin:0;font-size:clamp(24px,6vw,34px);font-weight:900;letter-spacing:1px}
+.topline{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:500;gap:8px;flex-wrap:wrap}
+.score{background:#fff;color:var(--teal);font-weight:900;border-radius:99px;padding:4px 14px;font-size:16px}
+.bar{height:10px;background:rgba(255,255,255,.3);border-radius:99px;overflow:hidden}
+.bar>div{height:100%;background:#FDBA74;width:0;transition:width .4s}
+.stages{display:flex;gap:6px;margin:14px 0;overflow-x:auto}
+.stage-chip{flex:1;min-width:64px;text-align:center;font-size:13px;font-weight:700;padding:8px 6px;border-radius:10px;background:#fff;border:2px solid var(--line);color:var(--grey)}
+.stage-chip.on{border-color:var(--teal);color:var(--teal)}
+.stage-chip.done{background:var(--teal);border-color:var(--teal);color:#fff}
+.card{background:#fff;border:2px solid var(--ink);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.kicker{font-size:13px;font-weight:700;color:var(--orange);letter-spacing:1px}
+.q{font-size:clamp(18px,4.6vw,22px);font-weight:700;line-height:1.5;margin:0}
+.opts{display:grid;gap:10px}
+.opts.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+button{font-family:inherit}
+.opt{min-height:52px;font-size:17px;font-weight:500;text-align:left;padding:12px 16px;border:2px solid var(--line);background:#fff;border-radius:12px;cursor:pointer;color:var(--ink);transition:transform .1s,border-color .15s}
+.opt:hover:not(:disabled){border-color:var(--teal);transform:translateY(-1px)}
+.opt:disabled{cursor:default}
+.opt.right{background:#CCFBF1;border-color:var(--teal);font-weight:700}
+.opt.wrong{background:#FFEDD5;border-color:var(--orange);text-decoration:line-through}
+.fb{border-radius:12px;padding:12px 16px;font-size:16px;line-height:1.6;display:none}
+.fb.show{display:block;animation:pop .25s}
+.fb.good{background:var(--teal-l);border:2px solid var(--teal)}
+.fb.bad{background:var(--orange-l);border:2px solid var(--orange)}
+.fb b{display:block;font-size:17px;margin-bottom:2px}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.next{align-self:flex-end;background:var(--teal);color:#fff;border:0;border-radius:12px;padding:12px 26px;font-size:17px;font-weight:700;cursor:pointer;min-height:48px;display:none}
+.next.show{display:inline-block}
+.next:hover{background:#115E59}
+.person{display:flex;gap:14px;align-items:center;background:#F3F4F6;border-radius:14px;padding:12px 14px}
+.avatar{width:56px;height:56px;border-radius:99px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;flex-shrink:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:3px 9px;font-size:15px}
+.formula{background:var(--teal-l);border:2px dashed var(--teal);border-radius:12px;padding:10px 14px;font-size:16px;font-weight:700;text-align:center}
+.numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.numrow label{font-size:17px;font-weight:700}
+.numrow input{font-family:inherit;font-size:20px;width:130px;padding:10px 12px;border:2px solid var(--ink);border-radius:10px}
+.check{background:var(--orange);color:#fff;border:0;border-radius:10px;padding:12px 20px;font-size:17px;font-weight:700;cursor:pointer;min-height:48px}
+.meter{position:relative;display:grid;grid-template-columns:6.5fr 4.5fr 2fr 7fr;border-radius:10px;overflow:visible;border:1.5px solid var(--ink);height:44px;margin-top:22px}
+.meter>div{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.pin{position:absolute;top:-24px;transform:translateX(-50%);font-size:14px;font-weight:900;color:var(--orange);white-space:nowrap;transition:left .6s}
+.pin::after{content:'';position:absolute;left:50%;top:20px;width:3px;height:52px;background:var(--orange);transform:translateX(-50%)}
+.labels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.label{border:2px solid var(--ink);border-radius:10px;overflow:hidden;font-size:15px}
+.label h4{margin:0;background:var(--ink);color:#fff;text-align:center;padding:7px;font-size:17px}
+.label .per{background:#FEF3C7;text-align:right;padding:5px 10px;font-weight:700;border-bottom:2px solid var(--ink);transition:background .3s}
+.label .row{display:flex;justify-content:space-between;padding:5px 10px;border-bottom:1px solid var(--line)}
+.label .row:last-child{border-bottom:0}
+.label .flash{background:#99F6E4}
+.toggle{background:#fff;border:2px solid var(--teal);color:var(--teal);font-weight:700;border-radius:12px;padding:12px;font-size:16px;cursor:pointer;min-height:48px}
+.toggle.on{background:var(--teal);color:#fff}
+.end{text-align:center;align-items:center}
+.badge{width:150px;height:150px;border-radius:99px;background:var(--teal);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;border:8px solid #FDBA74;font-weight:900}
+.badge span:first-child{font-size:44px}
+.stars{font-size:36px;letter-spacing:6px;color:#F59E0B}
+.restart{background:#fff;border:2px solid var(--teal);color:var(--teal);border-radius:12px;padding:12px 22px;font-size:16px;font-weight:700;cursor:pointer;min-height:48px}
+.namebox{font-family:inherit;font-size:18px;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;width:100%;max-width:280px}
+.hint{font-size:14px;color:var(--grey);line-height:1.5}
+.sr{position:absolute;left:-9999px}
+footer{margin-top:18px;font-size:12px;color:var(--grey);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="topline"><span>HMSC 主題冊 (3) · 3.1 量度生理健康的指標</span><span class="score" id="score">0 分</span></div>
+    <h1>健康指標偵探</h1>
+    <div class="bar" aria-hidden="true"><div id="prog"></div></div>
+  </header>
+  <nav class="stages" id="stages" aria-label="關卡"></nav>
+  <main id="app" aria-live="polite"></main>
+  <footer>個案及營養標籤為虛構練習資料 · 標準參考 EDB 主題冊 (3)</footer>
+</div>
+
+<script>
+const BP = ['正常','前期高血壓','高血壓'];
+const FIT = ['肌力','肌耐力','心肺耐力','柔韌度'];
+const BMICAT = ['過輕','適中','過重','肥胖'];
+function bmiCat(b){return b<18.5?0:b<23?1:b<25?2:3}
+
+const STAGES = [
+ {name:'① 工具', intro:'每種工具量度甚麼？', qs:[
+  {t:'mc',q:'用「磅」和「尺」量度後，可以計算出哪一個指標？',o:['身體質量指數 (BMI)','血壓','脈搏','柔韌度'],a:0,e:'BMI ＝ 體重 (公斤) ÷ 身高 (米)²，所以要用磅量體重、用尺量身高。'},
+  {t:'mc',q:'「測量卡鉗」可以量度甚麼？',o:['腰臀比例','皮下脂肪（脂肪比例）','血壓','心肺耐力'],a:1,e:'測量卡鉗捏起皮膚層，量度皮下脂肪厚度，比 BMI 更準確地反映脂肪比例。'},
+  {t:'mc',q:'用軟尺量度腰圍和臀圍，主要評估哪一種健康問題？',o:['發育異常','中央肥胖','體重過輕','肌力不足'],a:1,e:'腰臀比例 ＝ 腰圍 ÷ 臀圍，用來量度脂肪是否積聚在腰腹，即「中央肥胖」。'},
+  {t:'mc',q:'血壓計和脈搏，主要反映身體哪方面的功能？',o:['消化功能','骨骼健康','心血管功能','柔韌度'],a:2,e:'脈搏和血壓都是量度心臟血管功能的指標。'},
+  {t:'mc',q:'阿美剛跑完步，量得脈搏 115 次 / 分鐘。應怎樣處理？',o:['立即判斷她有心臟病','休息後再量，並多量幾次','脈搏越快代表越健康','改量 BMI 就可以了'],a:1,e:'運動後脈搏會上升。不同時間和身體狀況都會影響脈搏，只量一兩次不能作出判斷。'}
+ ]},
+ {name:'② BMI', intro:'替三位市民計算 BMI', qs:[
+  {t:'bmi',who:'陳先生',ini:'陳',desc:'45 歲 · 男 · 的士司機',h:1.70,w:78},
+  {t:'bmi',who:'李小姐',ini:'李',desc:'28 歲 · 女 · 文員',h:1.60,w:50},
+  {t:'bmi',who:'阿傑',ini:'傑',desc:'22 歲 · 男 · 健身教練',h:1.75,w:80},
+  {t:'mc',q:'阿傑的 BMI 屬「肥胖」，但他的脂肪比例只有 12%（男性正常 10–20%）。最好的解釋是：',o:['脂肪磅壞了','BMI 不能分辨脂肪和肌肉，不適用於健身人士','阿傑其實很肥胖','BMI 只適用於女性'],a:1,e:'BMI 只看體重和身高。阿傑肌肉多所以體重高，但脂肪比例正常，所以他不是肥胖。這是 DSE 常考的「BMI 的限制」。'}
+ ]},
+ {name:'③ 血壓', intro:'血壓紅綠燈：快速分類', qs:[
+  {t:'mc',q:'血壓 118 / 76 mmHg 屬於：',o:BP,a:0,two:1,e:'上壓低於 120，下壓低於 80，屬正常。'},
+  {t:'mc',q:'血壓 135 / 85 mmHg 屬於：',o:BP,a:1,two:1,e:'上壓 120–139、下壓 80–89，屬前期高血壓，應在一年至半年內覆檢。'},
+  {t:'mc',q:'血壓 150 / 95 mmHg 屬於：',o:BP,a:2,two:1,e:'上壓 ≥140 或下壓 ≥90，屬高血壓，應徵詢家庭醫生。'},
+  {t:'mc',q:'血壓 115 / 92 mmHg 屬於：（小心陷阱）',o:BP,a:2,two:1,e:'上壓正常，但下壓 92 已達 90 或以上。只要其中一個達到較高類別，就以較高類別計算。'},
+  {t:'mc',q:'「收縮壓」（上壓）主要反映甚麼？',o:['心臟輸出的功能','周邊血管的抗力','肺部容量','情緒'],a:0,e:'收縮壓反映心臟輸出功能；舒張壓（下壓）反映周邊血管的抗力。'}
+ ]},
+ {name:'④ 體適能', intro:'這項活動主要訓練哪一種體適能？', qs:[
+  {t:'mc',q:'舉重',o:FIT,a:0,two:1,e:'肌力：肌肉一次收縮所能產生的最大力量。'},
+  {t:'mc',q:'跑馬拉松',o:FIT,a:1,two:1,e:'肌耐力：一段時間內使肌肉重複收縮或持續用力。'},
+  {t:'mc',q:'瑜伽、太極',o:FIT,a:3,two:1,e:'柔韌度：關節達到最大活動幅度的能力。'},
+  {t:'mc',q:'帶氧運動',o:FIT,a:2,two:1,e:'心肺耐力：心肺把氧氣經血液送到肌肉，並移除二氧化碳等廢物。'},
+  {t:'mc',q:'為甚麼長者容易失去平衡？與哪一種體適能下降最有關？',o:FIT,a:3,two:1,e:'老化令關節滑潤減慢，柔韌度下降，人變得僵硬，影響平衡能力。'}
+ ]},
+ {name:'⑤ DSE', intro:'糖尿病患者應選哪款乳酪？', qs:[
+  {t:'label'},
+  {t:'mc',q:'主要影響血糖值的宏量營養素是：',o:['蛋白質','脂肪','碳水化合物','鈉'],a:2,e:'碳水化合物（包括糖）會直接影響血糖值。2025 DSE 卷一第 11(b) 題考過。'},
+  {t:'mc',q:'換成相同分量（每 150 克）後，糖尿病患者應選擇哪一款？',o:['乳酪 M','乳酪 N'],a:1,two:1,e:'每 150 克計：乳酪 N 糖 13.5 克、能量 120 千卡，都比乳酪 M（18.0 克、135 千卡）低。'},
+  {t:'mc',q:'哪一句解釋可以拿到 DSE 的「解釋」分？',o:['因為乳酪 N 只有 4.5 克糖，較少','因為進食相同分量時，乳酪 N 的糖 / 能量攝取較乳酪 M 低','因為乳酪 N 的包裝較細','因為乳酪 N 比較便宜'],a:1,e:'評卷參考的寫法：「進食相同分量時，X 的能量 / 糖……攝取較 Y 低」。第一句沒有比較相同分量，不能得分。'}
+ ]}
+];
+
+let si=0, qi=0, score=0, answered=0, scaled=false, name='';
+const total = STAGES.reduce((n,s)=>n+s.qs.filter(q=>q.t!=='label').length + s.qs.filter(q=>q.t==='bmi').length,0);
+const app=document.getElementById('app');
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function setScore(){document.getElementById('score').textContent=score+' 分';document.getElementById('prog').style.width=Math.round(answered/total*100)+'%'}
+function drawStages(){
+  document.getElementById('stages').innerHTML=STAGES.map((s,i)=>`<div class="stage-chip ${i<si?'done':i===si?'on':''}">${esc(s.name)}</div>`).join('');
+}
+
+function start(){
+  app.innerHTML=`<section class="card">
+    <div class="kicker">偵探登記</div>
+    <p class="q">歡迎加入健康指標偵探社！完成五個關卡，取得「神探徽章」。</p>
+    <div class="hint">準備好計算機。每答對一題得 10 分，答錯也會看到解釋。</div>
+    <label for="nm" style="font-weight:700">偵探名稱（可留空）</label>
+    <input id="nm" class="namebox" maxlength="20" placeholder="例如：4C 陳大文">
+    <button class="next show" id="go">開始任務</button>
+  </section>`;
+  document.getElementById('go').onclick=()=>{name=document.getElementById('nm').value.trim();render()};
+}
+
+function render(){
+  drawStages();setScore();
+  const st=STAGES[si], q=st.qs[qi];
+  if(q.t==='mc') renderMC(st,q);
+  else if(q.t==='bmi') renderBMI(st,q);
+  else renderLabel(st);
+}
+
+function head(st){return `<div class="kicker">${esc(st.name)} · ${esc(st.intro)} · ${qi+1}/${st.qs.length}</div>`}
+
+function renderMC(st,q){
+  app.innerHTML=`<section class="card">${head(st)}
+    <p class="q">${esc(q.q)}</p>
+    <div class="opts ${q.two?'two':''}">${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>
+    <div class="fb" id="fb"></div>
+    <button class="next" id="nx">下一題</button></section>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i, ok=i===q.a;
+    app.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.i===q.a)x.classList.add('right')});
+    if(!ok)b.classList.add('wrong');
+    if(ok)score+=10; answered++;
+    feedback(ok,q.e);
+  });
+}
+
+function feedback(ok,text){
+  const fb=document.getElementById('fb');
+  fb.className='fb show '+(ok?'good':'bad');
+  fb.innerHTML=`<b>${ok?'答對了！ +10':'差少少！'}</b>${esc(text)}`;
+  setScore();
+  const nx=document.getElementById('nx');nx.classList.add('show');nx.focus();nx.onclick=advance;
+}
+
+function renderBMI(st,q){
+  const bmi=q.w/(q.h*q.h), r=Math.round(bmi*10)/10, cat=bmiCat(bmi);
+  app.innerHTML=`<section class="card">${head(st)}
+    <div class="person"><div class="avatar" aria-hidden="true">${esc(q.ini)}</div>
+      <div><div style="font-size:19px;font-weight:900">${esc(q.who)}</div><div class="hint">${esc(q.desc)}</div>
+      <div class="chips"><span class="chip">身高 <b>${q.h.toFixed(2)} m</b></span><span class="chip">體重 <b>${q.w} kg</b></span></div></div></div>
+    <div class="formula">BMI ＝ 體重 ÷ 身高 ÷ 身高 ＝ ${q.w} ÷ ${q.h.toFixed(2)} ÷ ${q.h.toFixed(2)}</div>
+    <div class="numrow"><label for="bv">BMI ＝</label><input id="bv" inputmode="decimal" placeholder="小數點後一位"><button class="check" id="ck">檢查</button></div>
+    <div class="fb" id="fb1"></div>
+    <div id="step2"></div>
+    <div class="fb" id="fb"></div>
+    <button class="next" id="nx">下一題</button></section>`;
+  const inp=document.getElementById('bv');
+  let tries=0;
+  const check=()=>{
+    const v=parseFloat(inp.value);
+    const fb=document.getElementById('fb1');
+    if(isNaN(v)){fb.className='fb show bad';fb.innerHTML='<b>請輸入數字</b>例如 21.5';return}
+    tries++;
+    const ok=Math.abs(v-r)<=0.11;
+    if(ok||tries>=2){
+      inp.disabled=true;document.getElementById('ck').disabled=true;
+      if(ok)score+=10; answered++;
+      fb.className='fb show '+(ok?'good':'bad');
+      fb.innerHTML=`<b>${ok?'計算正確！ +10':'正確答案是 '+r}</b>${q.w} ÷ ${q.h.toFixed(2)} ÷ ${q.h.toFixed(2)} ＝ ${r}`;
+      setScore();step2();
+    } else {
+      fb.className='fb show bad';fb.innerHTML='<b>再試一次</b>提示：先計 身高 × 身高，再用體重除以這個數。';
+    }
+  };
+  document.getElementById('ck').onclick=check;
+  inp.onkeydown=e=>{if(e.key==='Enter')check()};
+  function step2(){
+    const s=document.getElementById('step2');
+    s.innerHTML=`<p class="q" style="font-size:18px">BMI ${r} 屬於哪一類？</p><div class="opts two">${BMICAT.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>`;
+    s.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      const i=+b.dataset.i, ok=i===cat;
+      s.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.i===cat)x.classList.add('right')});
+      if(!ok)b.classList.add('wrong');
+      if(ok)score+=10; answered++;
+      const pct=Math.min(Math.max((r-12)/(32-12),0),1)*100;
+      s.insertAdjacentHTML('beforeend',`<div class="meter" role="img" aria-label="BMI 量表，${q.who} 的 BMI 是 ${r}"><div style="background:#DBEAFE">過輕</div><div style="background:#99F6E4">適中</div><div style="background:#FED7AA">過重</div><div style="background:#FB923C">肥胖</div><span class="pin" style="left:0%">${esc(q.who)} ${r}</span></div>`);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{s.querySelector('.pin').style.left=pct+'%'}));
+      feedback(ok,'亞洲成年人標準：低於 18.5 過輕；18.5–22.9 適中；23–24.9 過重；25 或以上肥胖。');
+    });
+  }
+  inp.focus();
+}
+
+const M={per:150,e:135,p:6.0,f:4.5,c:21.0,s:18.0,na:75};
+const N={per:50,e:40,p:2.5,f:1.0,c:5.0,s:4.5,na:20};
+function labelHTML(id,nm,d,k){
+  const fx=v=>(Math.round(v*k*10)/10).toFixed(1).replace(/\.0$/,'');
+  return `<div class="label"><h4>${nm}</h4><div class="per ${k>1?'flash':''}">每 ${d.per*k} 克</div>
+  <div class="row"><span>能量</span><span>${fx(d.e)} 千卡</span></div>
+  <div class="row"><span>蛋白質</span><span>${(d.p*k).toFixed(1)} 克</span></div>
+  <div class="row"><span>總脂肪</span><span>${(d.f*k).toFixed(1)} 克</span></div>
+  <div class="row"><span>碳水化合物</span><span>${(d.c*k).toFixed(1)} 克</span></div>
+  <div class="row"><span>　糖</span><span>${(d.s*k).toFixed(1)} 克</span></div>
+  <div class="row"><span>鈉</span><span>${fx(d.na)} 毫克</span></div></div>`;
+}
+function renderLabel(st){
+  app.innerHTML=`<section class="card">${head(st)}
+    <p class="q">張伯伯患有糖尿病。單看數字，乳酪 N 的糖（4.5 克）好像比乳酪 M（18.0 克）少很多。這樣比較公平嗎？</p>
+    <div class="labels" id="lb">${labelHTML('m','乳酪 M',M,1)}${labelHTML('n','乳酪 N',N,1)}</div>
+    <button class="toggle" id="tg">把乳酪 N 換成「每 150 克」（× 3）</button>
+    <div class="fb" id="fb"></div>
+    <button class="next" id="nx">繼續</button></section>`;
+  document.getElementById('tg').onclick=function(){
+    scaled=!scaled;this.classList.toggle('on',scaled);
+    this.textContent=scaled?'已換成相同分量：每 150 克（再按還原）':'把乳酪 N 換成「每 150 克」（× 3）';
+    document.getElementById('lb').innerHTML=labelHTML('m','乳酪 M',M,1)+labelHTML('n','乳酪 N',N,scaled?3:1);
+    const fb=document.getElementById('fb');
+    if(scaled){fb.className='fb show good';fb.innerHTML='<b>這才公平！</b>兩款都是每 150 克。現在比較：乳酪 N 的糖 13.5 克、能量 120 千卡，仍然比乳酪 M 低，但差距沒有原本看起來那麼大。';
+      const nx=document.getElementById('nx');nx.classList.add('show');nx.onclick=advance;}
+  };
+}
+
+function advance(){
+  qi++;
+  if(qi>=STAGES[si].qs.length){si++;qi=0;scaled=false}
+  if(si>=STAGES.length) return finish();
+  render();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function finish(){
+  drawStages();setScore();
+  const max=total*10, pct=score/max;
+  const stars=pct>=.9?3:pct>=.7?2:pct>=.4?1:0;
+  const title=stars===3?'神探':stars===2?'高級偵探':stars===1?'見習偵探':'偵探學徒';
+  app.innerHTML=`<section class="card end">
+    <div class="kicker">任務完成</div>
+    <div class="badge" aria-hidden="true"><span>${'★'.repeat(Math.max(stars,1))}</span><span style="font-size:20px">${title}</span></div>
+    <p class="q">${name?esc(name)+'，':''}你取得 ${score} / ${max} 分</p>
+    <div class="stars" aria-label="${stars} 粒星">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div class="hint">把這個畫面截圖交給老師。想挑戰滿分？再玩一次！</div>
+    <button class="restart" id="rs">再玩一次</button></section>`;
+  document.getElementById('prog').style.width='100%';
+  document.getElementById('rs').onclick=()=>{si=0;qi=0;score=0;answered=0;scaled=false;render()};
+}
+
+drawStages();setScore();start();
+</script>
+</body>
+</html>
